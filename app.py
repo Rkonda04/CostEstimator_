@@ -534,6 +534,71 @@ div[data-testid="stNumberInput"] input:focus {
   box-shadow: 0 0 0 3px rgba(91,45,142,0.12) !important;
 }
 div[data-testid="stAlert"] { border-radius: 10px !important; }
+
+/* ══════════════════════════════════════════
+   INFO / MODE CALLOUTS
+══════════════════════════════════════════ */
+.info-callout {
+  background: var(--teal-lt); border: 1px solid rgba(14,144,112,0.28);
+  border-left: 4px solid var(--teal);
+  border-radius: var(--radius-sm); padding: 13px 18px;
+  font-size: 13px; color: #064030; line-height: 1.65; margin-bottom: 14px;
+}
+.hist-callout {
+  background: var(--p7); border: 1px solid var(--p5);
+  border-left: 4px solid var(--p3);
+  border-radius: var(--radius-sm); padding: 13px 18px;
+  font-size: 13px; color: var(--t1); line-height: 1.65; margin-bottom: 14px;
+}
+.all-callout {
+  background: rgba(14,144,112,0.06); border: 1px solid rgba(14,144,112,0.2);
+  border-left: 4px solid var(--teal);
+  border-radius: var(--radius-sm); padding: 13px 18px;
+  font-size: 13px; color: #064030; line-height: 1.65; margin-bottom: 14px;
+}
+
+/* ══════════════════════════════════════════
+   METHODOLOGY CARDS
+══════════════════════════════════════════ */
+.method-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 8px; }
+.method-item {
+  background: var(--p7); border: 1px solid var(--p6);
+  border-radius: var(--radius-sm); padding: 20px 16px; text-align: center;
+}
+.method-icon { font-size: 30px; margin-bottom: 10px; }
+.method-title { font-size: 11px; font-weight: 700; color: var(--p2); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 7px; }
+.method-desc { font-size: 12px; color: var(--t2); line-height: 1.6; }
+
+
+/* ══════════════════════════════════════════
+   2-COL HOME GRID
+══════════════════════════════════════════ */
+.home-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+@media (max-width: 700px) {
+  .home-2col { grid-template-columns: 1fr; }
+  .method-grid { grid-template-columns: 1fr; }
+}
+
+/* ══════════════════════════════════════════
+   PAGE INTRO STRIP (estimator top)
+══════════════════════════════════════════ */
+.page-intro {
+  background: linear-gradient(135deg, var(--p0) 0%, var(--p1) 100%);
+  border-radius: var(--radius); padding: 18px 24px;
+  margin-bottom: 20px; display: flex; align-items: flex-start; gap: 16px;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.page-intro-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; opacity: 0.85; }
+.page-intro-text { flex: 1; }
+.page-intro-title { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.92); margin-bottom: 5px; }
+.page-intro-sub { font-size: 12px; color: rgba(255,255,255,0.42); line-height: 1.7; font-family: var(--mono); }
+.page-intro-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.page-intro-pill {
+  padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600;
+  font-family: var(--mono); letter-spacing: 0.04em;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.55);
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -677,10 +742,10 @@ if st.session_state.page == "home":
       <div class="hero-inner">
         <div class="hero-eyebrow">
           <div class="hero-eyebrow-dot"></div>
-          Civitas Engineering Group &nbsp; 
+          Civitas Engineering Group &nbsp;·&nbsp;
         </div>
         <h1>Pipe Unit Cost<br><em>Estimator</em></h1>
-       
+
       </div>
       <div class="hero-ribbon">
         <div class="ribbon-stat">
@@ -714,59 +779,97 @@ if st.session_state.page == "home":
 
     st.markdown('<div class="home-wrap">', unsafe_allow_html=True)
 
+    # ── Row 1: What it does + Who it's for ──
+    st.markdown(f"""
+    <div class="home-2col">
+      <div class="home-section" style="margin-bottom:0">
+        <div class="home-card" style="height:100%">
+          <div class="hc-icon">📐</div>
+          <div class="hc-title">What this tool does</div>
+          <ul class="hc-list">
+            <li><div class="hc-bullet"></div>Look up <strong>average, min &amp; max unit costs</strong> ($/LF) for waterline, gravity main, and force main pipe</li>
+            <li><div class="hc-bullet"></div>Filter by pipe <strong>diameter</strong>, <strong>material</strong>, and <strong>bid year</strong> from real bid tab data</li>
+            <li><div class="hc-bullet"></div>View <strong>raw historical bid prices</strong> exactly as bid — no inflation adjustment when browsing a specific past year</li>
+            <li><div class="hc-bullet"></div>Project costs forward to any year through <strong>{PROJECTION_END_YEAR}</strong> using ENR escalation rates</li>
+            <li><div class="hc-bullet"></div>Build a <strong>multi-line estimate</strong> and view your total with per-item breakdowns</li>
+          </ul>
+          <div class="stat-row">
+            <div class="stat-pill"><div class="stat-pill-n">{n_rows:,}</div><div class="stat-pill-l">LF bid rows</div></div>
+            <div class="stat-pill"><div class="stat-pill-n">{n_proj}</div><div class="stat-pill-l">projects</div></div>
+            <div class="stat-pill"><div class="stat-pill-n">{hist_r}</div><div class="stat-pill-l">data years</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="home-section" style="margin-bottom:0">
+        <div class="home-card" style="height:100%">
+          <div class="hc-icon">👷</div>
+          <div class="hc-title">Who it's for</div>
+          <ul class="hc-list">
+            <li><div class="hc-bullet"></div>Civitas project engineers estimating waterline and pipe construction costs for CIP projects</li>
+            <li><div class="hc-bullet"></div>Planners needing a quick sanity check on pipe unit costs by material and diameter</li>
+            <li><div class="hc-bullet"></div>Anyone forecasting what today's costs will look like in a future bid year</li>
+          </ul>
+          <div class="stat-row" style="margin-top:auto;padding-top:16px">
+            <div class="stat-pill"><div class="stat-pill-n">3</div><div class="stat-pill-l">pipe types</div></div>
+            <div class="stat-pill"><div class="stat-pill-n">→ {PROJECTION_END_YEAR}</div><div class="stat-pill-l">project to</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Row 2: Quick start ──
     st.markdown(f"""
     <div class="home-section">
       <div class="home-card">
-        <div class="hc-title">What this tool does</div>
-        <ul class="hc-list">
-          <li><div class="hc-bullet"></div>Look up average, min, and max unit costs ($/LF) for waterline, gravity main, and force main pipe</li>
-          <li><div class="hc-bullet"></div>Filter by pipe <strong>diameter</strong>, <strong>material</strong>, and <strong>bid year</strong> from real Houston-area bid tab data</li>
-          <li><div class="hc-bullet"></div>All historical costs automatically normalized to <strong>{CURRENT_YEAR} dollars</strong> using actual CPI rates</li>
-          <li><div class="hc-bullet"></div>Project costs forward to any year through <strong>{PROJECTION_END_YEAR}</strong> using ENR escalation rates</li>
-          <li><div class="hc-bullet"></div>Build a multi-line estimate and view your total with inflation notes</li>
-        </ul>
-        <div class="stat-row">
-          <div class="stat-pill"><div class="stat-pill-n">{n_rows:,}</div><div class="stat-pill-l">LF bid rows</div></div>
-          <div class="stat-pill"><div class="stat-pill-n">{n_proj}</div><div class="stat-pill-l">projects</div></div>
-          <div class="stat-pill"><div class="stat-pill-n">{hist_r}</div><div class="stat-pill-l">data years</div></div>
-          <div class="stat-pill"><div class="stat-pill-n">→ {PROJECTION_END_YEAR}</div><div class="stat-pill-l">project to</div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="home-section">
-      <div class="home-card">
-        <div class="hc-title">Who it's for</div>
-        <ul class="hc-list">
-          <li><div class="hc-bullet"></div>Civitas project engineers estimating waterline and pipe construction costs</li>
-          <li><div class="hc-bullet"></div>City of Houston project managers reviewing CIP budget estimates</li>
-          <li><div class="hc-bullet"></div>Planners needing a quick sanity check on pipe unit costs by material and diameter</li>
-          <li><div class="hc-bullet"></div>Anyone forecasting what today's costs will look like in a future bid year</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="home-section">
-      <div class="home-card">
-        <div class="hc-title">Quick start</div>
+        <div class="hc-icon">🚀</div>
+        <div class="hc-title">Quick start — 4 steps</div>
         <div class="step-grid">
-          <div class="step-item"><div class="step-num">1</div><div class="step-text">Choose a <strong>pipe type</strong> — Waterline, Gravity Main, or Force Main</div></div>
-          <div class="step-item"><div class="step-num">2</div><div class="step-text">Select a <strong>diameter</strong> and <strong>material</strong> from the dropdowns</div></div>
-          <div class="step-item"><div class="step-num">3</div><div class="step-text">Pick a <strong>bid year</strong> — historic to filter data, or future to project costs to {PROJECTION_END_YEAR}</div></div>
-          <div class="step-item"><div class="step-num">4</div><div class="step-text">Enter a <strong>quantity</strong> and click <strong>＋ Add to Estimate</strong> to build your total</div></div>
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">Click <strong>Launch Estimator</strong> and choose a <strong>pipe type</strong> — Waterline, Gravity Main, or Force Main</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">Select a <strong>diameter</strong> from the dropdown — options are populated from actual bid data</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">Pick a <strong>bid year</strong>: a past year shows raw historical prices; a future year projects from {CURRENT_YEAR}$; <em>All Years</em> normalizes everything to {CURRENT_YEAR}$</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text">Choose a <strong>material</strong>, enter a <strong>quantity (LF)</strong>, and click <strong>＋ Add to Estimate</strong> to build your line-item total</div>
+          </div>
         </div>
       </div>
     </div>
+    """, unsafe_allow_html=True)
 
+    # ── Row 3: How costs are calculated ──
+    st.markdown(f"""
     <div class="home-section">
       <div class="home-card">
+        <div class="hc-icon">🧮</div>
         <div class="hc-title">How costs are calculated</div>
-        <ul class="hc-list">
-          <li><div class="hc-bullet"></div><strong>Historic normalization:</strong> all historical bids inflated to {CURRENT_YEAR}$ using actual annual CPI rates</li>
-          <li><div class="hc-bullet"></div><strong>Future projection:</strong> {CURRENT_YEAR}$ costs escalated forward using ENR-based rates (2.0%/yr after 2029)</li>
-          <li><div class="hc-bullet"></div><strong>Unit cost shown:</strong> average across all matching LF rows; min/max range displayed for context</li>
-          <li><div class="hc-bullet"></div>For budgetary planning only.</li>
-        </ul>
+        <div class="method-grid">
+          <div class="method-item">
+            <div class="method-icon">📋</div>
+            <div class="method-title">Historical Year</div>
+            <div class="method-desc">Shows <strong>raw bid prices</strong> exactly as recorded in that year's bid tabs — no inflation adjustment applied. Pure source data.</div>
+          </div>
+          <div class="method-item">
+            <div class="method-icon">📊</div>
+            <div class="method-title">All Years</div>
+            <div class="method-desc">All historical bids are <strong>normalized to {CURRENT_YEAR}$</strong> using actual annual rates, so bids from different years can be meaningfully averaged.</div>
+          </div>
+          <div class="method-item">
+            <div class="method-icon">📈</div>
+            <div class="method-title">Future Year</div>
+            <div class="method-desc">Starts from the <strong>{CURRENT_YEAR}$ normalized average</strong>, then escalates forward using ENR-based annual rates (≈2.0%/yr after 2029).</div>
+          </div>
+        </div>
+        
       </div>
     </div>
     """, unsafe_allow_html=True)
@@ -791,6 +894,24 @@ elif st.session_state.page == "estimator":
         st.stop()
 
     st.markdown('<div style="max-width:1100px;margin:0 auto;padding:28px 24px 64px">', unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div class="page-intro">
+      <div class="page-intro-icon">🔧</div>
+      <div class="page-intro-text">
+        <div class="page-intro-title">COH Pipe Cost Estimator</div>
+        <div class="page-intro-sub">
+          Select a pipe type, diameter, material, and bid year — the cost card updates in real time.
+          Add line items to build a complete project estimate. Prices are sourced from real bid tabs.
+        </div>
+        <div class="page-intro-pills">
+          <span class="page-intro-pill">📋 Past year → raw bid price</span>
+          <span class="page-intro-pill">📊 All Years → {CURRENT_YEAR}$ normalized</span>
+          <span class="page-intro-pill">📈 Future year → ENR escalated</span>
+        </div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Back + pipe type row
     back_col, *pt_cols = st.columns([0.42]+[1]*len(PIPE_TYPES))
@@ -829,7 +950,11 @@ elif st.session_state.page == "estimator":
 
         if is_fut:
             ff_i=future_factor(yr); pct_i=(ff_i-1)*100; yrs_o=yr-CURRENT_YEAR
-            st.markdown(f'<div class="fut-banner">📅 <strong>Future Year: {yr}</strong> — Projecting from {CURRENT_YEAR}$ using ENR escalation. Multiplier: <strong>&times;{ff_i:.4f}</strong> (+{pct_i:.1f}% over {yrs_o} yr{"s" if yrs_o!=1 else ""}). Historical bid table shows raw prices.</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="fut-banner">📈 <strong>Future Year: {yr}</strong> — The cost card starts from the {CURRENT_YEAR}$ normalized average, then applies ENR escalation. Multiplier: <strong>&times;{ff_i:.4f}</strong> (+{pct_i:.1f}% over {yrs_o} yr{"s" if yrs_o!=1 else ""}). The bid data table below still shows raw historical prices for reference.</div>', unsafe_allow_html=True)
+        elif is_hist:
+            st.markdown(f'<div class="hist-callout">📋 <strong>Historical Year: {yr}</strong> — Showing <strong>raw bid prices as recorded in {yr}</strong>. No inflation or normalization is applied. These are the exact dollar amounts from the original bid tabs. To compare across years, switch to <em>All Years</em>.</div>', unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div class="all-callout">📊 <strong>All Years mode</strong> — All historical bids are normalized to <strong>{CURRENT_YEAR} dollars</strong> using actual annual rates, so data from different bid years can be meaningfully averaged together. Use a specific past year to see raw prices, or a future year to project forward.</div>', unsafe_allow_html=True)
 
         ba, bb, _ = st.columns([1.5,1,1])
         with ba: add_click = st.button("＋ Add to Estimate", type="primary", use_container_width=True)
@@ -1001,7 +1126,7 @@ elif st.session_state.page == "estimator":
               <div class="tbl-wrap"><table class="civ-tbl"><thead><tr>
                 <th>Material</th>{col_heads}<th class="r">Bid Data</th><th>Relative</th><th class="c">vs Cheapest</th>
               </tr></thead><tbody>{mc_body}</tbody></table></div>
-              <div style="font-size:10px;color:var(--t4);margin-top:8px;font-family:var(--mono)">{"Raw " + str(yr) + "$ bid prices — no inflation adjustment." if is_hist else "All costs CPI-adjusted to " + str(CURRENT_YEAR) + "$."}  For budgetary planning only.</div>
+              <div style="font-size:10px;color:var(--t4);margin-top:8px;font-family:var(--mono)">{"Raw " + str(yr) + "$ bid prices — no inflation adjustment." if is_hist else "All costs adjusted to " + str(CURRENT_YEAR) + "$."}  For budgetary planning only.</div>
             </div>""", unsafe_allow_html=True)
 
     # Estimate Summary
