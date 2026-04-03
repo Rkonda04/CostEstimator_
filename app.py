@@ -6,7 +6,7 @@ import base64
 
 st.set_page_config(
     page_title="COH Pipe Cost Estimator · Civitas",
-    page_icon="🔧",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -17,7 +17,7 @@ def get_logo_b64():
     for path in [
         "civitas_logo.png",
         os.path.join(os.path.dirname(__file__), "civitas_logo.png"),
-        "static/civitas_logo.png",
+        "civitas_logo.png",
     ]:
         if os.path.exists(path):
             with open(path, "rb") as f:
@@ -650,7 +650,7 @@ def render_header(show_nav=True):
     center = '''
       <div class="civ-header-center">
         <div class="civ-header-app-name">COH Pipe Cost Estimator</div>
-        <div class="civ-header-app-sub">City of Houston · Water Infrastructure</div>
+
       </div>''' if show_nav else '<div></div>'
     st.markdown(f"""
     <div class="civ-header">
@@ -676,10 +676,10 @@ if st.session_state.page == "home":
       <div class="hero-inner">
         <div class="hero-eyebrow">
           <div class="hero-eyebrow-dot"></div>
-          Civitas Engineering Group &nbsp;·&nbsp; City of Houston
+          Civitas Engineering Group &nbsp; 
         </div>
         <h1>Pipe Unit Cost<br><em>Estimator</em></h1>
-        <p class="hero-sub">Historical bid data, CPI-adjusted and projected forward — so every estimate is grounded in real numbers.</p>
+       
       </div>
       <div class="hero-ribbon">
         <div class="ribbon-stat">
@@ -764,7 +764,7 @@ if st.session_state.page == "home":
           <li><div class="hc-bullet"></div><strong>Historic normalization:</strong> all historical bids inflated to {CURRENT_YEAR}$ using actual annual CPI rates</li>
           <li><div class="hc-bullet"></div><strong>Future projection:</strong> {CURRENT_YEAR}$ costs escalated forward using ENR-based rates (2.0%/yr after 2029)</li>
           <li><div class="hc-bullet"></div><strong>Unit cost shown:</strong> average across all matching LF rows; min/max range displayed for context</li>
-          <li><div class="hc-bullet"></div>For budgetary planning only — AACE Class 5 accuracy. Not for contract use.</li>
+          <li><div class="hc-bullet"></div>For budgetary planning only.</li>
         </ul>
       </div>
     </div>
@@ -777,7 +777,7 @@ if st.session_state.page == "home":
             st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="civ-footer"><strong>Civitas Engineering Group, Inc.</strong> &nbsp;·&nbsp; City of Houston Water Infrastructure &nbsp;·&nbsp; Base Year {CURRENT_YEAR} &nbsp;·&nbsp; ENR Escalation → {PROJECTION_END_YEAR} &nbsp;·&nbsp; For Budgetary Planning Only</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="civ-footer"><strong>Civitas Engineering Group, Inc.</strong> &nbsp;&nbsp; &nbsp;·&nbsp; Base Year {CURRENT_YEAR} &nbsp;·&nbsp; ENR Escalation → {PROJECTION_END_YEAR} &nbsp;·&nbsp; For Budgetary Planning Only</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ESTIMATOR PAGE
@@ -1048,4 +1048,4 @@ elif st.session_state.page == "estimator":
         </div>""", unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="civ-footer"><strong>Civitas Engineering Group, Inc.</strong> &nbsp;·&nbsp; City of Houston Water Infrastructure &nbsp;·&nbsp; COH Pipe Cost Estimator &nbsp;·&nbsp; Base Year {CURRENT_YEAR} &nbsp;·&nbsp; ENR Escalation → {PROJECTION_END_YEAR} &nbsp;·&nbsp; For Budgetary Planning Only</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="civ-footer"><strong>Civitas Engineering Group, Inc.</strong> &nbsp;·&nbsp; &nbsp;·&nbsp; COH Pipe Cost Estimator &nbsp;·&nbsp; Base Year {CURRENT_YEAR} &nbsp;·&nbsp; ENR Escalation → {PROJECTION_END_YEAR} &nbsp;·&nbsp; For Budgetary Planning Only</div>', unsafe_allow_html=True)
