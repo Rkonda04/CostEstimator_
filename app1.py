@@ -6,7 +6,7 @@ import base64
 
 st.set_page_config(
     page_title="COH Pipe Cost Estimator · Civitas",
-    page_icon="🔧",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -17,7 +17,7 @@ def get_logo_b64():
     for path in [
         "civitas_logo.png",
         os.path.join(os.path.dirname(__file__), "civitas_logo.png"),
-        "static/civitas_logo.png",
+        "civitas_logo.png",
     ]:
         if os.path.exists(path):
             with open(path, "rb") as f:
@@ -617,9 +617,10 @@ def qrows(df,hist,pt,dia,mat=None,yr=None):
         if not df[m2].empty: return df[m2]
     return df[m]
 
-def qstats(rows):
+def qstats(rows, raw=False):
     if rows.empty: return {}
-    c=rows["_cost"].dropna()
+    col = "_cost_raw" if raw else "_cost"
+    c=rows[col].dropna()
     return {"avg":round(c.mean(),2),"lo":round(c.min(),2),"hi":round(c.max(),2),
             "n":len(c),"tabs":rows["source"].nunique()}
 
@@ -650,7 +651,7 @@ def render_header(show_nav=True):
     center = '''
       <div class="civ-header-center">
         <div class="civ-header-app-name">COH Pipe Cost Estimator</div>
-        <div class="civ-header-app-sub">City of Houston · Water Infrastructure</div>
+
       </div>''' if show_nav else '<div></div>'
     st.markdown(f"""
     <div class="civ-header">
@@ -676,10 +677,10 @@ if st.session_state.page == "home":
       <div class="hero-inner">
         <div class="hero-eyebrow">
           <div class="hero-eyebrow-dot"></div>
-          Civitas Engineering Group &nbsp;·&nbsp; City of Houston
+          Civitas Engineering Group &nbsp; 
         </div>
         <h1>Pipe Unit Cost<br><em>Estimator</em></h1>
-        <p class="hero-sub">Historical bid data, CPI-adjusted and projected forward — so every estimate is grounded in real numbers.</p>
+       
       </div>
       <div class="hero-ribbon">
         <div class="ribbon-stat">
@@ -764,7 +765,7 @@ if st.session_state.page == "home":
           <li><div class="hc-bullet"></div><strong>Historic normalization:</strong> all historical bids inflated to {CURRENT_YEAR}$ using actual annual CPI rates</li>
           <li><div class="hc-bullet"></div><strong>Future projection:</strong> {CURRENT_YEAR}$ costs escalated forward using ENR-based rates (2.0%/yr after 2029)</li>
           <li><div class="hc-bullet"></div><strong>Unit cost shown:</strong> average across all matching LF rows; min/max range displayed for context</li>
-          <li><div class="hc-bullet"></div>For budgetary planning only — AACE Class 5 accuracy. Not for contract use.</li>
+          <li><div class="hc-bullet"></div>For budgetary planning only.</li>
         </ul>
       </div>
     </div>
@@ -777,7 +778,7 @@ if st.session_state.page == "home":
             st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="civ-footer"><strong>Civitas Engineering Group, Inc.</strong> &nbsp;·&nbsp; City of Houston Water Infrastructure &nbsp;·&nbsp; Base Year {CURRENT_YEAR} &nbsp;·&nbsp; ENR Escalation → {PROJECTION_END_YEAR} &nbsp;·&nbsp; For Budgetary Planning Only</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="civ-footer"><strong>Civitas Engineering Group, Inc.</strong> &nbsp;&nbsp; &nbsp;·&nbsp; Base Year {CURRENT_YEAR} &nbsp;·&nbsp; ENR Escalation → {PROJECTION_END_YEAR} &nbsp;·&nbsp; For Budgetary Planning Only</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ESTIMATOR PAGE
@@ -838,7 +839,7 @@ elif st.session_state.page == "estimator":
 
     with col_r:
         rows    = qrows(df,hist,pt,dia,mat,yr) if dia!="-- Select --" else pd.DataFrame()
-        s       = qstats(rows)
+        s       = qstats(rows, raw=is_hist)
         mat_sel = mat not in("-- All Materials --","-- Select Diameter First --")
         ff      = future_factor(yr) if is_fut else 1.0
         du      = round(s["avg"]*ff,2) if s else 0
@@ -856,27 +857,25 @@ elif st.session_state.page == "estimator":
             if is_fut:
                 infl = f'<div class="cc-infl-box cc-infl-future">📈 Base {CURRENT_YEAR}$ avg: <strong>${s["avg"]:,.2f}/LF</strong> &times; {ff:.4f} (+{(ff-1)*100:.1f}% over {yr-CURRENT_YEAR} yrs) → <strong>${du:,.2f}/LF in {yr}$</strong></div>'
             elif is_hist:
-                fv=cum_factor(yr)
-                infl = f'<div class="cc-infl-box cc-infl-hist">Bids from {yr} normalized &times;{fv:.4f} (+{(fv-1)*100:.1f}%) → {CURRENT_YEAR}$</div>'
+                infl = f'<div class="cc-infl-box cc-infl-hist">Raw {yr}$ bid prices — no inflation adjustment applied</div>'
             else: infl=""
             tot_html = f'<hr class="cc-sep"><div class="cc-total-lbl">{qty:,.0f} LF &times; ${du:,.2f} &nbsp;→&nbsp; Estimated Total</div><div class="cc-total-amt">${tot:,.0f}</div>' if tot else ""
 
-            st.markdown(f"""
-            <div class="cost-card">
-              <div class="cost-card-grid"></div>
-              <div class="cc-inner">
-                <div class="cc-context">{ctx.upper()}</div>
-                <div class="cc-label">{'Projected' if is_fut else 'Average'} Unit Cost ({dy}$)</div>
-                <div class="cc-amount">${du:,.2f}<span class="cc-per">/ LF</span></div>
-                <div class="cc-range">Min ${dlo:,.2f} &nbsp;–&nbsp; Max ${dhi:,.2f} / LF</div>
-                {tot_html}{infl}
-                <div class="cc-chips">
-                  <div class="cc-chip"><strong>{s["n"]}</strong> bid rows</div>
-                  <div class="cc-chip"><strong>{s["tabs"]}</strong> project{'s' if s['tabs']!=1 else ''}</div>
-                  <div class="cc-chip"><strong>{'All Yrs' if not yr else yr}</strong></div>
-                </div>
-              </div>
-            </div>""", unsafe_allow_html=True)
+            _chips = (f'<div class="cc-chips">'
+                      f'<div class="cc-chip"><strong>{s["n"]}</strong> bid rows</div>'
+                      f'<div class="cc-chip"><strong>{s["tabs"]}</strong> project{"s" if s["tabs"]!=1 else ""}</div>'
+                      f'<div class="cc-chip"><strong>{"All Yrs" if not yr else yr}</strong></div>'
+                      f'</div>')
+            _label = 'Projected' if is_fut else 'Average'
+            st.markdown(
+                f'<div class="cost-card"><div class="cost-card-grid"></div><div class="cc-inner">'
+                f'<div class="cc-context">{ctx.upper()}</div>'
+                f'<div class="cc-label">{_label} Unit Cost ({dy}$)</div>'
+                f'<div class="cc-amount">${du:,.2f}<span class="cc-per">/ LF</span></div>'
+                f'<div class="cc-range">Min ${dlo:,.2f} &nbsp;–&nbsp; Max ${dhi:,.2f} / LF</div>'
+                f'{tot_html}{infl}{_chips}'
+                f'</div></div>',
+                unsafe_allow_html=True)
 
             if add_click:
                 if mat_sel and qty>0:
@@ -937,7 +936,9 @@ elif st.session_state.page == "estimator":
                 av=rows_tbl[bc].dropna().mean(); av=round(av,2) if pd.notna(av) else None
                 foot+=f'<td class="r" style="border-left:1px solid var(--border)">{"$"+f"{av:,.2f}" if av else "—"}</td>'
             foot+='</tr>'
-            yr_note=f'Cost card projected to {yr}$' if is_fut else f'Cost card normalized to {CURRENT_YEAR}$'
+            yr_note=(f'Cost card projected to {yr}$' if is_fut else
+                     f'Raw {yr}$ bid prices — no inflation adjustment' if is_hist else
+                     f'Cost card normalized to {CURRENT_YEAR}$')
             st.markdown(f"""
             <div class="e-card">
               <div class="e-card-label">Raw Bid Prices by Project &amp; Bidder
@@ -951,9 +952,10 @@ elif st.session_state.page == "estimator":
 
         # Material Comparison
         all_mc=qrows(df,hist,pt,dia,yr=yr)
+        _mc_col = "_cost_raw" if is_hist else "_cost"
         mc=(all_mc.groupby("material",as_index=False)
-            .agg(avg=("_cost","mean"),lo=("_cost","min"),hi=("_cost","max"),
-                 n=("_cost","count"),tabs=("source","nunique"))
+            .agg(avg=(_mc_col,"mean"),lo=(_mc_col,"min"),hi=(_mc_col,"max"),
+                 n=(_mc_col,"count"),tabs=("source","nunique"))
             .sort_values("avg"))
         mc[["avg","lo","hi"]]=mc[["avg","lo","hi"]].round(2)
 
@@ -963,7 +965,9 @@ elif st.session_state.page == "estimator":
             yr_lbl=str(yr) if yr else "All Years"
             col_heads=(f'<th class="r">Base {CURRENT_YEAR}$ / LF</th><th class="r">Projected {yr}$ / LF</th>'
                        if is_fut else '<th class="r">Avg Unit Cost</th><th class="r">Min – Max</th>')
-            mat_note=(f"{dia} · projected to {yr}$" if is_fut else f"{dia} · {yr_lbl} · {CURRENT_YEAR}$")
+            mat_note=(f"{dia} · projected to {yr}$" if is_fut else
+                      f"{dia} · {yr_lbl} · {yr}$" if is_hist else
+                      f"{dia} · {yr_lbl} · {CURRENT_YEAR}$")
             st.markdown('<div class="sec-div"><div class="sec-div-line"></div><div class="sec-div-lbl">Material Comparison</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
 
             mc_body=""
@@ -997,7 +1001,7 @@ elif st.session_state.page == "estimator":
               <div class="tbl-wrap"><table class="civ-tbl"><thead><tr>
                 <th>Material</th>{col_heads}<th class="r">Bid Data</th><th>Relative</th><th class="c">vs Cheapest</th>
               </tr></thead><tbody>{mc_body}</tbody></table></div>
-              <div style="font-size:10px;color:var(--t4);margin-top:8px;font-family:var(--mono)">All costs CPI-adjusted to {CURRENT_YEAR}$. For budgetary planning only.</div>
+              <div style="font-size:10px;color:var(--t4);margin-top:8px;font-family:var(--mono)">{"Raw " + str(yr) + "$ bid prices — no inflation adjustment." if is_hist else "All costs CPI-adjusted to " + str(CURRENT_YEAR) + "$."}  For budgetary planning only.</div>
             </div>""", unsafe_allow_html=True)
 
     # Estimate Summary
@@ -1048,4 +1052,4 @@ elif st.session_state.page == "estimator":
         </div>""", unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="civ-footer"><strong>Civitas Engineering Group, Inc.</strong> &nbsp;·&nbsp; City of Houston Water Infrastructure &nbsp;·&nbsp; COH Pipe Cost Estimator &nbsp;·&nbsp; Base Year {CURRENT_YEAR} &nbsp;·&nbsp; ENR Escalation → {PROJECTION_END_YEAR} &nbsp;·&nbsp; For Budgetary Planning Only</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="civ-footer"><strong>Civitas Engineering Group, Inc.</strong> &nbsp;·&nbsp; &nbsp;·&nbsp; COH Pipe Cost Estimator &nbsp;·&nbsp; Base Year {CURRENT_YEAR} &nbsp;·&nbsp; ENR Escalation → {PROJECTION_END_YEAR} &nbsp;·&nbsp; For Budgetary Planning Only</div>', unsafe_allow_html=True)
